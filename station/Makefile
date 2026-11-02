@@ -4,20 +4,23 @@ NAME = station
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -Iinclude
 
-SRCS = 	src/main.c 
+SRCS = 	src/main.c \
 		src/connection.c
-OBJS = $(SRCS:.c=.o)
+OBJ_DIR = obj
+OBJS = $(addprefix $(OBJ_DIR)/,$(notdir $(SRCS:.c=.o)))
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
-%.o: %.c
+
+$(OBJ_DIR)/%.o: src/%.c
+	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)
