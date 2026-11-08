@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/rand"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -10,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"time"
 )
 
 var exPath string
@@ -85,14 +85,15 @@ func HandleConnection(conn net.Conn) {
 			return
 		}
 
-		v, _ := time.Now().UTC().MarshalText()
+		// v, _ := time.Now().UTC().MarshalText()
 		// f, err := os.Create(exPath + "/" + string(v))
 		// if err != nil {
 		// 	log.Println("file error: ", err)
 		// }
 
 		// n, err := f.Write(payload)
-		err := writePayload(reader, h.Length, exPath+"/"+string(v))
+		id := rand.Text()
+		err := writePayload(reader, h.Length, exPath+"/"+id+".iq")
 		if err != nil {
 			log.Print(err)
 			return
