@@ -21,7 +21,7 @@ int connect_to_server(const char *host, const char *port);
 // send.c
 int send_all(int fd, const void *buffer, size_t length);
 int send_header(int fd, uint64_t payload_length);
-int send_file(int server_fd, const char *filepath)
+int send_file(int server_fd, const char *filepath);
 
 
 #endif
