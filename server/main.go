@@ -22,19 +22,19 @@ type Header struct {
 	// payload
 }
 
-func readMsg(r io.Reader) (Header, []byte, error) {
-	var h Header
-	if err := binary.Read(r, binary.BigEndian, &h); err != nil {
-		return h, nil, err
-	}
-	if string(h.Magic[:]) != "GSP1" || h.Version != 1 || h.Length > 256<<20 {
-		return h, nil, fmt.Errorf("invalid header: %q v%d len=%d", h.Magic, h.Version, h.Length)
-	}
+// func readMsg(r io.Reader) (Header, []byte, error) {
+// 	var h Header
+// 	if err := binary.Read(r, binary.BigEndian, &h); err != nil {
+// 		return h, nil, err
+// 	}
+// 	if string(h.Magic[:]) != "GSP1" || h.Version != 1 || h.Length > 256<<20 {
+// 		return h, nil, fmt.Errorf("invalid header: %q v%d len=%d", h.Magic, h.Version, h.Length)
+// 	}
 
-	payload := make([]byte, h.Length)
-	_, err := io.ReadFull(r, payload)
-	return h, payload, err
-}
+// 	payload := make([]byte, h.Length)
+// 	_, err := io.ReadFull(r, payload)
+// 	return h, payload, err
+// }
 
 func main() {
 	_, filename, _, _ := runtime.Caller(0)
