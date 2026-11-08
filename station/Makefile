@@ -5,7 +5,8 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror -Iinclude
 
 SRCS = 	src/main.c \
-		src/connection.c
+		src/connection.c \
+		src/send.c
 OBJ_DIR = obj
 OBJS = $(addprefix $(OBJ_DIR)/,$(notdir $(SRCS:.c=.o)))
 

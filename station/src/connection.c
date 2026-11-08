@@ -36,30 +36,3 @@ int connect_to_server(const char *host, const char *port)
     }
     return (fd);
 }
-
-int send_all(int fd, const void *buffer, size_t length)
-{
-    const unsigned char *data = buffer;
-    size_t total_sent = 0;
-    ssize_t sent;
-
-    while (total_sent < length)
-    {
-        // Call send() with:
-        send(fd, "Hello Anakin!\n", 14, 0);
-        // - fd
-        // - data + total_sent
-        // - length - total_sent
-        // - flags
-
-        // If sent > 0, update total_sent
-        // If interrupted (EINTR), retry
-        // Otherwise, return -1
-    }
-    return (0);
-}
-
-int send_header(int fd, uint64_t payload_length)
-{
-    
-}
