@@ -61,63 +61,29 @@ func main() {
 func HandleConnection(conn net.Conn) {
 	defer conn.Close()
 
-	reader := bufio.NewReader(conn)
-	writer := bufio.NewWriter(conn)
-
-	for {
-		// h, payload, err := readMsg(reader)
-		// if err != nil {
-		// 	if err != io.EOF {
-		// 		log.Println("read error: ", err)
-		// 		// log.Print("acknowledgement: Error")
-		// 		writer.Write([]byte{1}) // Error
-		// 		writer.Flush()
-		// 	}
-		// 	return
-		// }
-		var h Header
-		if err := binary.Read(reader, binary.BigEndian, &h); err != nil {
-			log.Println("read error: ", err)
-			return
-		}
-		if string(h.Magic[:]) != "GSP1" || h.Version != 1 || h.Length > 256<<20 {
-			log.Printf("invalid header: %q v%d len=%d", h.Magic, h.Version, h.Length)
-			return
-		}
-
-		// v, _ := time.Now().UTC().MarshalText()
-		// f, err := os.Create(exPath + "/" + string(v))
-		// if err != nil {
-		// 	log.Println("file error: ", err)
-		// }
-
-		// n, err := f.Write(payload)
-		id := rand.Text()
-		err := writePayload(reader, h.Length, exPath+"/"+id+".iq")
-		if err != nil {
-			log.Print(err)
-			return
-		}
-		// if err != nil {
-		// 	log.Println("write error: ", err)
-		// 	f.Close()
-		// 	return
-		// } else if n != int(h.Length) {
-		// 	log.Print("Could not write whole payload")
-		// 	f.Close()
-		// 	return
-		// }
-
-		log.Printf("type=%d len=%d", h.Version, h.Length)
-		// log.Printf("type=%d len=%d payload=%x", h.Version, h.Length, payload)
-		// log.Print("acknowledgement: Success")
-		writer.Write([]byte{0}) // Success
-		writer.Flush()
-		// if err = f.Close(); err != nil {
-		// 	log.Println("close error: ", err)
-		// 	return
-		// }
+	if err := receive(bufio.NewReader(conn)); err != nil {
+		log.Println("error: ", err)
+		conn.Write([]byte{1}) // Error
+		return
 	}
+	conn.Write([]byte{0}) // Success
+}
+
+func receive(r io.Reader) error {
+	var h Header
+	if err := binary.Read(r, binary.BigEndian, &h); err != nil {
+		return err
+	}
+	if string(h.Magic[:]) != "GSP1" || h.Version != 1 || h.Length > 256<<20 {
+		return fmt.Errorf("invalid header: %q v%d len=%d", h.Magic, h.Version, h.Length)
+	}
+	path := exPath + "/" + rand.Text() + ".iq"
+	if err := writePayload(r, h.Length, path); err != nil {
+		os.Remove(path) // remove incomplete recording
+		return err
+	}
+	log.Printf("saved %s (%d bytes)", path, h.Length)
+	return nil
 }
 
 func writePayload(r io.Reader, lenght uint64, path string) error {
