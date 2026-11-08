@@ -62,12 +62,3 @@ int send_file(int server_fd, const char *filepath)
     close(file_fd);
     return (0);
 }
-// 3. The structure of send_file()
-// I'll leave the implementation to you, but here's the pseudocode:
-// 1. Open the file using open().
-// 2. Call fstat() to determine its size. Check for errors and enforce our 256 MiB protocol limit.
-// 3. Send the GSP1 header containing that size.
-// 4. Create a 4096-byte buffer.
-// 5. Repeatedly read() into that buffer and call send_all() with the actual number of bytes read.
-// 6. Keep a running total, and stop once you've sent the declared file size.
-// 7. Close the file and return success or failure.
