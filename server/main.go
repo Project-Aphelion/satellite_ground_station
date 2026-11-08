@@ -82,6 +82,7 @@ func HandleConnection(conn net.Conn) {
 			panic(err)
 		}
 		defer f.Close()
+		// n, err := f.Write([]byte(fmt.Sprintf("%x", payload)))
 		n, err := f.Write(payload)
 		if err != nil {
 			log.Println("write error: ", err)
