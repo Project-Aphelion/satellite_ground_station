@@ -41,12 +41,26 @@ int send_header(int fd, uint64_t payload_length)
 int send_file(int server_fd, const char *filepath)
 {
     struct stat st;
+    char buffer[4096];
+    ssize_t total_sent = 0;
+    int bytes_read;
 
     int file_fd = open(filepath, O_RDONLY);
     if (file_fd < 0)
         return (-1);
     fstat(file_fd, &st);
-    send_header(server_fd, st.st_size);
+    if (send_header(server_fd, st.st_size) < 0)
+        return (-1); //error handle
+    
+    while (total_sent < st.st_size)
+    {
+        bytes_read = read(file_fd, buffer, 4096);
+        if (send_all(server_fd, buffer, bytes_read) < 0)
+            return (-1); // do proper error handling here ig.
+        total_sent += bytes_read;
+    }
+    close(file_fd);
+    return (0);
 }
 // 3. The structure of send_file()
 // I'll leave the implementation to you, but here's the pseudocode:
