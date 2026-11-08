@@ -15,5 +15,8 @@
 
 int connect_to_server(const char *host, const char *port);
 int send_all(int fd, const void *buffer, size_t length);
+int send_header(int fd, uint64_t payload_length);
+
+
 
 #endif
