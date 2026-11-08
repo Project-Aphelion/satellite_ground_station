@@ -65,34 +65,75 @@ func HandleConnection(conn net.Conn) {
 	writer := bufio.NewWriter(conn)
 
 	for {
-		h, payload, err := readMsg(reader)
-		if err != nil {
-			if err != io.EOF {
-				log.Println("read error: ", err)
-				log.Print("acknowledgement: Error")
-				writer.Write([]byte{1})
-				writer.Flush()
-			}
+		// h, payload, err := readMsg(reader)
+		// if err != nil {
+		// 	if err != io.EOF {
+		// 		log.Println("read error: ", err)
+		// 		// log.Print("acknowledgement: Error")
+		// 		writer.Write([]byte{1}) // Error
+		// 		writer.Flush()
+		// 	}
+		// 	return
+		// }
+		var h Header
+		if err := binary.Read(reader, binary.BigEndian, &h); err != nil {
+			log.Println("read error: ", err)
+			return
+		}
+		if string(h.Magic[:]) != "GSP1" || h.Version != 1 || h.Length > 256<<20 {
+			log.Printf("invalid header: %q v%d len=%d", h.Magic, h.Version, h.Length)
 			return
 		}
 
 		v, _ := time.Now().UTC().MarshalText()
-		f, err := os.Create(exPath + "/" + string(v))
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		// n, err := f.Write([]byte(fmt.Sprintf("%x", payload)))
-		n, err := f.Write(payload)
-		if err != nil {
-			log.Println("write error: ", err)
-		} else if n != int(h.Length) {
-			log.Print("Could not write whole payload")
-		}
+		// f, err := os.Create(exPath + "/" + string(v))
+		// if err != nil {
+		// 	log.Println("file error: ", err)
+		// }
 
-		log.Printf("type=%d len=%d payload=%x", h.Version, h.Length, payload)
-		log.Print("acknowledgement: Success")
-		writer.Write([]byte{0})
+		// n, err := f.Write(payload)
+		err := writePayload(reader, h.Length, exPath+"/"+string(v))
+		if err != nil {
+			log.Print(err)
+			return
+		}
+		// if err != nil {
+		// 	log.Println("write error: ", err)
+		// 	f.Close()
+		// 	return
+		// } else if n != int(h.Length) {
+		// 	log.Print("Could not write whole payload")
+		// 	f.Close()
+		// 	return
+		// }
+
+		log.Printf("type=%d len=%d", h.Version, h.Length)
+		// log.Printf("type=%d len=%d payload=%x", h.Version, h.Length, payload)
+		// log.Print("acknowledgement: Success")
+		writer.Write([]byte{0}) // Success
 		writer.Flush()
+		// if err = f.Close(); err != nil {
+		// 	log.Println("close error: ", err)
+		// 	return
+		// }
 	}
+}
+
+func writePayload(r io.Reader, lenght uint64, path string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	n, err := io.CopyN(f, r, int64(lenght))
+	if err != nil {
+		return err
+	}
+
+	if n != int64(lenght) {
+		return fmt.Errorf("incomplete payload")
+	}
+
+	return f.Sync()
 }
